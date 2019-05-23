@@ -1,5 +1,6 @@
 import pickle
 import pandas as pd
+import numpy as np
 from ekstraksi import AudioExtractor
 
 with open('model.pkl', 'rb') as f:
@@ -14,9 +15,6 @@ KELAS = [
 
 
 def predict(filename):
-    feature = pd.DataFrame(AudioExtractor(filename).extract())
-    index = int(MODEL.predict(feature))
-    print(index)
-    return KELAS[index]
-
-print(predict('classic.mp3'))
+    features = AudioExtractor(filename).extract()
+    features = pd.DataFrame(features)
+    return KELAS[int(np.mean(MODEL.predict(features)))]

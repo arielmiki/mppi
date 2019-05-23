@@ -27,7 +27,7 @@ class AudioExtractor:
 
     def read_audio(self):
         data, sampling_rate = librosa.load(
-            self.file, res_type='kaiser_fast', duration=4.0)
+            self.file, res_type='kaiser_fast', duration=30)
         return data, sampling_rate
 
     def count_stats(self, data):
@@ -47,45 +47,49 @@ class AudioExtractor:
 
     def extract(self):
         data, sampling_rate = self.read_audio()
-        S = np.abs(librosa.stft(data))
-        fixed_features = {}
-        for feature in self.features:
-            coeff = self.features[feature]
-            counted_stats = None
-            if feature == "chroma_stft":
-                counted_stats = self.count_stats(librosa.feature.chroma_stft(
-                    y=data, sr=sampling_rate, n_chroma=coeff))
-            elif feature == "chroma_cqt":
-                counted_stats = self.count_stats(librosa.feature.chroma_cqt(
-                    y=data, sr=sampling_rate, n_chroma=coeff))
-            elif feature == "chroma_cens":
-                counted_stats = self.count_stats(librosa.feature.chroma_cens(
-                    y=data, sr=sampling_rate, n_chroma=coeff))
+        N = len(data)//sampling_rate
+        extracted = []
+        for i in range(0, N, 3):
+            S = np.abs(librosa.stft(data[i*sampling_rate:(i+3) * sampling_rate]))
+            fixed_features = {}
+            for feature in self.features:
+                coeff = self.features[feature]
+                counted_stats = None
+                if feature == "chroma_stft":
+                    counted_stats = self.count_stats(librosa.feature.chroma_stft(
+                        y=data, sr=sampling_rate, n_chroma=coeff))
+                elif feature == "chroma_cqt":
+                    counted_stats = self.count_stats(librosa.feature.chroma_cqt(
+                        y=data, sr=sampling_rate, n_chroma=coeff))
+                elif feature == "chroma_cens":
+                    counted_stats = self.count_stats(librosa.feature.chroma_cens(
+                        y=data, sr=sampling_rate, n_chroma=coeff))
 
-            elif feature == "spectral_centroid":
-                counted_stats = self.count_stats(
-                    librosa.feature.spectral_centroid(y=data, sr=sampling_rate))
-            elif feature == "spectral_bandwidth":
-                counted_stats = self.count_stats(
-                    librosa.feature.spectral_bandwidth(y=data, sr=sampling_rate))
-            elif feature == "spectral_contrast":
-                counted_stats = self.count_stats(
-                    librosa.feature.spectral_contrast(S=S, sr=sampling_rate))
-            elif feature == "spectral_rolloff":
-                counted_stats = self.count_stats(
-                    librosa.feature.spectral_rolloff(y=data, sr=sampling_rate))
+                elif feature == "spectral_centroid":
+                    counted_stats = self.count_stats(
+                        librosa.feature.spectral_centroid(y=data, sr=sampling_rate))
+                elif feature == "spectral_bandwidth":
+                    counted_stats = self.count_stats(
+                        librosa.feature.spectral_bandwidth(y=data, sr=sampling_rate))
+                elif feature == "spectral_contrast":
+                    counted_stats = self.count_stats(
+                        librosa.feature.spectral_contrast(S=S, sr=sampling_rate))
+                elif feature == "spectral_rolloff":
+                    counted_stats = self.count_stats(
+                        librosa.feature.spectral_rolloff(y=data, sr=sampling_rate))
 
-            elif feature == "mfcc":
-                counted_stats = self.count_stats(librosa.feature.mfcc(
-                    y=data, sr=sampling_rate, n_mfcc=coeff))
-            elif feature == "rmse":
-                counted_stats = self.count_stats(librosa.feature.rmse(y=data))
-            elif feature == "zcr":
-                counted_stats = self.count_stats(
-                    librosa.feature.zero_crossing_rate(y=data))
-            for counted_stat in counted_stats:
-                for i in range(len(counted_stats[counted_stat])):
-                    value = counted_stats[counted_stat][i]
-                    fixed_features[feature+"_" +
-                                   counted_stat+"_"+str(i+1)] = [value]
-        return fixed_features
+                elif feature == "mfcc":
+                    counted_stats = self.count_stats(librosa.feature.mfcc(
+                        y=data, sr=sampling_rate, n_mfcc=coeff))
+                elif feature == "rmse":
+                    counted_stats = self.count_stats(librosa.feature.rmse(y=data))
+                elif feature == "zcr":
+                    counted_stats = self.count_stats(
+                        librosa.feature.zero_crossing_rate(y=data))
+                for counted_stat in counted_stats:
+                    for i in range(len(counted_stats[counted_stat])):
+                        value = counted_stats[counted_stat][i]
+                        fixed_features[feature+"_" +
+                                    counted_stat+"_"+str(i+1)] = value
+            extracted.append(fixed_features)
+        return extracted

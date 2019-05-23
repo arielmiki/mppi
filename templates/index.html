@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Music Genre Classifier</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Spinnaker");
+
+        body {
+            background: #fff;
+            color: #222;
+            font-family: lato, sans-serif;
+            text-align: center;
+            margin: 10% auto;
+            display: table;
+        }
+
+        form {
+            text-align: left;
+        }
+
+        #file-upload {
+            position: absolute;
+            left: -9999px;
+        }
+
+        label[for="file-upload"] {
+            padding: 0.5em;
+            display: inline-block;
+            background: #bbb;
+            cursor: pointer;
+        }
+
+        label[for="file-upload"]:hover {
+            background: #ddd;
+        }
+
+        #filename {
+            padding: 0.5em;
+            float: left;
+            width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            background: #eee;
+        }
+        h3 span {
+            color:red
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Musical Genre Classification</h1>
+    <h2>by: Kelompok Terakhir</h2>
+    {% if not genre %}
+    <div>
+        <form method="post" enctype="multipart/form-data" action="/">
+            <span id="filename">Select your file</span>
+            <label for="file-upload">Browse<input name='file' type="file" id="file-upload"></label>
+            <div>
+                <button class="btn btn-primary btn-xs" type='submit'>Predict</button>
+            </div>
+        </form>
+        {% else %}
+            <h3>Genre anda adalah <span>{{ genre }}</span></h3> 
+        {% endif %}
+    </div>
+    <script>
+        $('#file-upload').change(function () {
+            var filepath = this.value;
+            var m = filepath.match(/([^\/\\]+)$/);
+            var filename = m[1];
+            $('#filename').html(filename);
+
+        });
+    </script>
+</body>
+
+</html>
